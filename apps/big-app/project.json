@@ -1,0 +1,23 @@
+{
+  "name": "big-app",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/big-app/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "main": "apps/big-app/src/main.ts",
+        "outputPath": "dist/apps/big-app",
+        "tsConfig": "apps/big-app/tsconfig.app.json",
+        "platform": "node",
+        "format": ["esm"],
+        "bundle": false,
+        "skipTypeCheck": true,
+        "generatePackageJson": false,
+        "deleteOutputPath": true
+      }
+    }
+  }
+}

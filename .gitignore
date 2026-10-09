@@ -1,4 +1,7 @@
 node_modules
 src
+dist
 dist-*
 verify-*
+apps/big-app/src
+.nx

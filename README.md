@@ -6,12 +6,31 @@ passing thousands of entry points to a single esbuild call (what `@nx/esbuild:es
 sequential builds of 500 keeps memory flat. The proposed fix is in
 [nrwl/nx#37339](https://github.com/nrwl/nx/pull/37339).
 
-This script calls esbuild directly. It demonstrates the root cause, not the `@nx/esbuild` executor.
+`measure-nx.mjs` shows the problem through the executor. `measure.mjs` and `verify.mjs` call esbuild directly to show the root cause and that batching does not change the output.
 
-## Run
+## Setup
+
+pnpm 12.4.2 (via `packageManager`), Nx 23.3.0, `@nx/esbuild` 23.3.0, esbuild 0.25.12.
 
 ```bash
-npm install
+pnpm install
+```
+
+## Reproduce through the `@nx/esbuild` executor
+
+`apps/big-app` is built with `@nx/esbuild:esbuild`, `bundle: false`, `format: ["esm"]`.
+
+```bash
+node generate-app.mjs 15000   # generate N small TypeScript files under apps/big-app/src
+node measure-nx.mjs           # runs `nx build big-app` and prints peak memory of the process tree
+```
+
+The installed `@nx/esbuild` version is printed in the result, so the same script can be used to
+compare a build that includes the batching fix against a release that does not.
+
+## Reproduce the root cause with esbuild directly
+
+```bash
 node generate.mjs 5000   # generate N small TypeScript files under src/
 node measure.mjs         # build once with all entry points, then in batches of 500
 ```
@@ -40,7 +59,16 @@ PASS  control (no outbase): output differs, which is why the fix sets outbase
 
 ## Results
 
-Apple M4 Pro, 48 GB RAM, macOS (arm64), Node 24.19.0, esbuild 0.25.12. One run per row.
+Apple M4 Pro, 48 GB RAM, macOS (arm64), Node 24.19.0. One run per row.
+
+Through the `@nx/esbuild` executor (released 23.3.0, no batching):
+
+| Files  | Peak memory | Time   |
+| ------ | ----------- | ------ |
+| 5,000  | 4,770 MB    | 2.7 s  |
+| 15,000 | 11,652 MB   | 16.0 s |
+
+esbuild called directly (esbuild 0.25.12), one call vs. batches of 500:
 
 | Files  | Mode            | Peak memory | Time   |
 | ------ | --------------- | ----------- | ------ |
