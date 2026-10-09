@@ -20,6 +20,24 @@ node measure.mjs         # build once with all entry points, then in batches of 
 tree every 20 ms, so the numbers are approximate. It also checks that both modes write the same
 file layout (both set `outbase: 'src'`).
 
+## Verify the output is the same
+
+```bash
+node verify.mjs
+```
+
+Builds 1,300 generated files once in a single call and once in batches of 500, then compares the
+file paths and the SHA-256 of every output file. It also runs a control without a shared `outbase`,
+which must produce different output. That control is why the fix in nrwl/nx sets `outbase` on every
+batch. Exit code is non-zero if any check fails.
+
+```
+PASS  single call wrote 1300 files
+PASS  batched (shared outbase): same file paths as single call
+PASS  batched (shared outbase): identical bytes for every file
+PASS  control (no outbase): output differs, which is why the fix sets outbase
+```
+
 ## Results
 
 Apple M4 Pro, 48 GB RAM, macOS (arm64), Node 24.19.0, esbuild 0.25.12. One run per row.
